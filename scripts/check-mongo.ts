@@ -10,12 +10,16 @@ config({ path: resolve(process.cwd(), '.env.local') });
 
 const uri = process.env.MONGODB_URI?.trim();
 
-if (!uri) {
-  console.error('MONGODB_URI 없음');
-  process.exit(1);
+function getMongoUri(): string {
+  if (!uri) {
+    throw new Error('MONGODB_URI is not defined');
+  }
+  return uri;
 }
 
-const match = uri.match(/^mongodb\+srv:\/\/([^:]+):([^@]+)@([^/?]+)/);
+const mongoUri = getMongoUri();
+
+const match = mongoUri.match(/^mongodb\+srv:\/\/([^:]+):([^@]+)@([^/?]+)/);
 if (!match) {
   console.error('URI 형식 오류: mongodb+srv://USER:PASS@HOST/... 형태인지 확인');
   process.exit(1);
@@ -53,12 +57,12 @@ async function tryConnect(label: string, testUri: string) {
 
 async function main() {
   console.log('\n--- 연결 시도 ---');
-  const ok1 = await tryConnect('.env.local URI 그대로', uri);
+  const ok1 = await tryConnect('.env.local URI 그대로', mongoUri);
 
-  if (!ok1 && !uri.includes('authSource=')) {
-    const withAuth = uri.includes('?')
-      ? `${uri}&authSource=admin`
-      : `${uri}?authSource=admin`;
+  if (!ok1 && !mongoUri.includes('authSource=')) {
+    const withAuth = mongoUri.includes('?')
+      ? `${mongoUri}&authSource=admin`
+      : `${mongoUri}?authSource=admin`;
     await tryConnect('authSource=admin 추가', withAuth);
   }
 }
