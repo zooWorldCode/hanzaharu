@@ -29,8 +29,16 @@ export type TopActionButton = {
 
 export type TopActionConfig = {
   left: TopActionButton;
-  showStatus?: boolean;
+  showStatus?: boolean;      // 상태 필(🔥💰) + 초록 버튼
+  showGreenStyle?: boolean;  // 상태 필 없이 초록 버튼만
+  centerTitle?: string;      // 중앙 타이틀 텍스트
   right: TopActionButton[];
+};
+
+export const RANKING_ROUTE_ACTION: TopActionConfig = {
+  left: { id: "back", label: "‹", ariaLabel: "뒤로가기" },
+  centerTitle: "순위",
+  right: [{ id: "help", label: "?", ariaLabel: "도움말" }],
 };
 
 export const TOP_ACTIONS: Record<MainTabId, TopActionConfig> = {
@@ -45,11 +53,9 @@ export const TOP_ACTIONS: Record<MainTabId, TopActionConfig> = {
     right: [{ id: "menu", label: "☰", ariaLabel: "메뉴" }],
   },
   game: {
-    left: { id: "reward", label: "🎁", ariaLabel: "보상" },
-    right: [
-      { id: "rank", label: "🏆", ariaLabel: "랭킹" },
-      { id: "settings", label: "⚙", ariaLabel: "설정" },
-    ],
+    left: { id: "settings", label: "⚙", ariaLabel: "설정" },
+    showGreenStyle: true,
+    right: [{ id: "ranking", label: "🏆", ariaLabel: "등수" }],
   },
   mypage: {
     left: { id: "home", label: "🏠", ariaLabel: "홈" },

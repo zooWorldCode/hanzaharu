@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import type { TopActionConfig } from "@/lib/main-tabs";
 import { useLearningType, type LearningType } from "@/lib/learning-type-context";
+import { useUserState } from "@/lib/user-state-context";
 import { cn } from "@/lib/utils";
 
 type TopActionBarProps = {
@@ -20,7 +21,7 @@ const LEARNING_LABELS: Record<LearningType, string> = {
 
 const TYPES: LearningType[] = ["meaning", "vocab", "idioms"];
 
-function BlueCircleButton({
+function GreenCircleButton({
   label,
   ariaLabel,
   onClick,
@@ -34,7 +35,7 @@ function BlueCircleButton({
       type="button"
       aria-label={ariaLabel}
       onClick={onClick}
-      className="flex size-12 items-center justify-center rounded-full bg-[#4D69CF] text-lg font-semibold text-white shadow-md transition-transform active:scale-95"
+      className="flex size-12 items-center justify-center rounded-full bg-[#4A9B2F] text-lg font-semibold text-white shadow-md transition-transform active:scale-95"
     >
       {label}
     </button>
@@ -62,18 +63,18 @@ function CircleButton({
   );
 }
 
-function StatusPill({ icon, value }: { icon: string; value: number }) {
+function StatusPill({ label, value, tone }: { label: string; value: number; tone: string }) {
   return (
-    <div className="flex items-center gap-1 rounded-full bg-[#C9A227] px-4 py-2.5 text-sm font-bold text-white shadow-sm">
-      <span>{icon}</span>
-      <span>{value}</span>
+    <div className="flex items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-bold shadow-sm ring-1 ring-[#D4EBC5]">
+      <span className={tone}>{label}</span>
+      <span className="text-gray-800">{value}</span>
     </div>
   );
 }
 
-function HamburgerMenu() {
+function LearningMenu() {
   const [open, setOpen] = useState(false);
-  const { learningType: selected, setLearningType } = useLearningType();
+  const { learningType, setLearningType } = useLearningType();
 
   function choose(type: LearningType) {
     setLearningType(type);
@@ -82,163 +83,142 @@ function HamburgerMenu() {
 
   return (
     <div className="relative">
-      {/* ── 태블릿+: 가로 pill ── */}
       <div className="hidden md:block">
-        <AnimatePresence mode="wait">
-          {open ? (
-            <motion.div
-              key="pill"
-              initial={{ maxWidth: 0, opacity: 0 }}
-              animate={{ maxWidth: 260, opacity: 1 }}
-              exit={{ maxWidth: 0, opacity: 0 }}
-              transition={{
-                maxWidth: { duration: 0.22, ease: [0.4, 0, 0.2, 1] },
-                opacity: { duration: 0.12 },
-              }}
-              className="overflow-hidden"
-            >
-              <div className="flex items-center gap-0.5 whitespace-nowrap rounded-full bg-[#4D69CF] p-1.5 shadow-md">
-                {TYPES.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => choose(type)}
-                    className={cn(
-                      "rounded-full px-3 py-2 text-[11px] font-bold transition-colors",
-                      selected === type
-                        ? "bg-white text-[#4D69CF]"
-                        : "text-white/70 hover:text-white",
-                    )}
-                  >
-                    {LEARNING_LABELS[type]}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  aria-label="메뉴 닫기"
-                  className="ml-0.5 flex size-7 items-center justify-center rounded-full text-white/70 hover:text-white"
-                >
-                  ✕
-                </button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="btn"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.14 }}
-            >
-              <BlueCircleButton label="☰" ariaLabel="메뉴" onClick={() => setOpen(true)} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── 모바일: 버튼 + 아래로 드롭다운 ── */}
-      <div className="md:hidden">
-        <BlueCircleButton
-          label={open ? "✕" : "☰"}
-          ariaLabel={open ? "메뉴 닫기" : "메뉴"}
-          onClick={() => setOpen((v) => !v)}
-        />
-
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ y: -6, opacity: 0, scale: 0.96 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: -6, opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
-              className="absolute right-0 top-14 z-50 min-w-[152px] overflow-hidden rounded-2xl bg-[#4D69CF] p-1.5 shadow-xl"
-            >
+        {open ? (
+          <div className="overflow-hidden">
+            <div className="flex items-center gap-1 whitespace-nowrap rounded-full bg-[#4A9B2F] p-1.5 shadow-md">
               {TYPES.map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => choose(type)}
                   className={cn(
-                    "w-full rounded-xl px-4 py-2.5 text-sm font-bold transition-colors",
-                    selected === type
-                      ? "bg-white text-[#4D69CF]"
-                      : "text-white/70 hover:bg-white/10 hover:text-white",
+                    "rounded-full px-3 py-2 text-[11px] font-bold transition-colors",
+                    learningType === type
+                      ? "bg-white text-[#4A9B2F]"
+                      : "text-white/70 hover:text-white",
                   )}
                 >
                   {LEARNING_LABELS[type]}
                 </button>
               ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="메뉴 닫기"
+                className="ml-1 flex size-7 items-center justify-center rounded-full text-white/70 hover:text-white"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        ) : (
+          <GreenCircleButton label="≡" ariaLabel="메뉴" onClick={() => setOpen(true)} />
+        )}
+      </div>
+
+      <div className="md:hidden">
+        <GreenCircleButton
+          label={open ? "×" : "≡"}
+          ariaLabel={open ? "메뉴 닫기" : "메뉴"}
+          onClick={() => setOpen((value) => !value)}
+        />
+
+        {open && (
+          <div className="absolute right-0 top-14 z-50 min-w-[152px] overflow-hidden rounded-2xl bg-[#4A9B2F] p-1.5 shadow-xl">
+            {TYPES.map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => choose(type)}
+                className={cn(
+                  "w-full rounded-xl px-4 py-2.5 text-sm font-bold transition-colors",
+                  learningType === type
+                    ? "bg-white text-[#4A9B2F]"
+                    : "text-white/70 hover:bg-white/10 hover:text-white",
+                )}
+              >
+                {LEARNING_LABELS[type]}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 export function TopActionBar({ config, onAction, className }: TopActionBarProps) {
-  const hasHamburger = config.showStatus && config.right.some((b) => b.id === "menu");
+  const useGreen = config.showStatus || config.showGreenStyle;
+  const hasLearningMenu = config.showStatus && config.right.some((button) => button.id === "menu");
+  const { tickets, coins } = useUserState();
 
   return (
-    <motion.div
+    <div
       className={cn(
-        "pointer-events-none fixed top-0 left-1/2 z-40 flex w-full max-w-[1280px] -translate-x-1/2 items-center justify-between px-6 pt-4",
+        "pointer-events-none fixed left-1/2 top-0 z-40 w-full max-w-[1280px] -translate-x-1/2 px-6 pt-4 pb-5",
+        "bg-[#F4FAF0]/90 backdrop-blur-md",
         className,
       )}
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
     >
-      {/* Left */}
-      <motion.div className="pointer-events-auto">
+      <div className="relative flex items-start justify-between">
+        <div className="pointer-events-auto shrink-0">
+          {useGreen ? (
+            <GreenCircleButton
+              label={config.left.label}
+              ariaLabel={config.left.ariaLabel}
+              onClick={() => onAction?.(config.left.id)}
+            />
+          ) : (
+            <CircleButton
+              label={config.left.label}
+              ariaLabel={config.left.ariaLabel}
+              onClick={() => onAction?.(config.left.id)}
+            />
+          )}
+        </div>
+
         {config.showStatus ? (
-          <BlueCircleButton
-            label={config.left.label}
-            ariaLabel={config.left.ariaLabel}
-            onClick={() => onAction?.(config.left.id)}
-          />
-        ) : (
-          <CircleButton
-            label={config.left.label}
-            ariaLabel={config.left.ariaLabel}
-            onClick={() => onAction?.(config.left.id)}
-          />
-        )}
-      </motion.div>
+          <div className="pointer-events-auto absolute left-1/2 top-0 flex -translate-x-1/2 gap-2">
+            <StatusPill label="티켓" value={tickets} tone="text-[#7C3AED]" />
+            <StatusPill label="코인" value={coins} tone="text-[#C9A227]" />
+          </div>
+        ) : config.centerTitle ? (
+          <div className="pointer-events-none absolute left-1/2 top-0 flex h-12 -translate-x-1/2 items-center">
+            <h1 className="text-xl font-extrabold text-gray-900">{config.centerTitle}</h1>
+          </div>
+        ) : null}
 
-      {/* Center status pills */}
-      {config.showStatus && (
-        <motion.div className="pointer-events-auto flex gap-2">
-          <StatusPill icon="🔥" value={7} />
-          <StatusPill icon="💰" value={320} />
-        </motion.div>
-      )}
+        <div className="pointer-events-auto flex shrink-0 items-center gap-3">
+          {hasLearningMenu ? (
+            <LearningMenu />
+          ) : (
+            config.right.map((button) =>
+              useGreen ? (
+                <GreenCircleButton
+                  key={button.id}
+                  label={button.label}
+                  ariaLabel={button.ariaLabel}
+                  onClick={() => onAction?.(button.id)}
+                />
+              ) : (
+                <CircleButton
+                  key={button.id}
+                  label={button.label}
+                  ariaLabel={button.ariaLabel}
+                  onClick={() => onAction?.(button.id)}
+                />
+              ),
+            )
+          )}
+        </div>
+      </div>
 
-      {/* Right */}
-      <motion.div className="pointer-events-auto flex items-center gap-3">
-        {hasHamburger ? (
-          <HamburgerMenu />
-        ) : (
-          config.right.map((button) =>
-            config.showStatus ? (
-              <BlueCircleButton
-                key={button.id}
-                label={button.label}
-                ariaLabel={button.ariaLabel}
-                onClick={() => onAction?.(button.id)}
-              />
-            ) : (
-              <CircleButton
-                key={button.id}
-                label={button.label}
-                ariaLabel={button.ariaLabel}
-                onClick={() => onAction?.(button.id)}
-              />
-            ),
-          )
-        )}
-      </motion.div>
-    </motion.div>
+      {/* 헤더 하단 페이드 — 콘텐츠와 자연스럽게 연결 */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-full h-4 bg-gradient-to-b from-[#F4FAF0]/60 to-transparent"
+      />
+    </div>
   );
 }

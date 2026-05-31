@@ -1,20 +1,25 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { getLessonEntry, buildSteps, type Step } from "@/lib/lesson-data";
-import { LessonShell } from "./lesson-shell";
+import { buildSteps, getLessonEntry, type Step } from "@/lib/lesson-data";
+import { IdiomExplainScreen } from "./idiom-explain-screen";
+import { IdiomTraceScreen } from "./idiom-trace-screen";
 import { LearnScreen } from "./learn-screen";
-import { TraceScreen } from "./trace-screen";
+import { LessonShell } from "./lesson-shell";
 import { QuizScreen } from "./quiz-screen";
+import { TraceScreen } from "./trace-screen";
+import { VocabExplainScreen } from "./vocab-explain-screen";
+import { VocabDialogueQuizScreen } from "./vocab-dialogue-quiz-screen";
 
 type LessonOverlayProps = {
-  lessonKey: string;  // e.g. "meaning_1_1"
+  lessonKey: string;
   onClose: () => void;
+  onComplete?: () => void;
 };
 
-export function LessonOverlay({ lessonKey, onClose }: LessonOverlayProps) {
+export function LessonOverlay({ lessonKey, onClose, onComplete }: LessonOverlayProps) {
   const steps = useMemo<Step[]>(() => {
     const entry = getLessonEntry(lessonKey);
     if (!entry) return [];
@@ -24,7 +29,6 @@ export function LessonOverlay({ lessonKey, onClose }: LessonOverlayProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [quizAnswered, setQuizAnswered] = useState(false);
 
-  // Reset when lesson changes
   useEffect(() => {
     setStepIndex(0);
     setQuizAnswered(false);
@@ -32,9 +36,13 @@ export function LessonOverlay({ lessonKey, onClose }: LessonOverlayProps) {
 
   if (steps.length === 0) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white gap-4">
-        <p className="text-gray-400 font-bold">준비 중인 레슨이에요</p>
-        <button type="button" onClick={onClose} className="text-sm text-[#57B72A] font-extrabold underline">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-white">
+        <p className="font-bold text-gray-400">준비 중인 학습입니다.</p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-sm font-extrabold text-[#57B72A] underline"
+        >
           돌아가기
         </button>
       </div>
@@ -46,14 +54,23 @@ export function LessonOverlay({ lessonKey, onClose }: LessonOverlayProps) {
 
   const goNext = () => {
     if (isLast) {
+      onComplete?.();
       onClose();
       return;
     }
-    setStepIndex((i) => i + 1);
+
+    setStepIndex((index) => index + 1);
     setQuizAnswered(false);
   };
 
-  const nextDisabled = step.type === "quiz" && !quizAnswered;
+  const goPrev = () => {
+    if (stepIndex === 0) return;
+    setStepIndex((index) => index - 1);
+    setQuizAnswered(false);
+  };
+
+  const nextDisabled =
+    (step.type === "quiz" || step.type === "vocab-dialogue-quiz") && !quizAnswered;
 
   return (
     <motion.div
@@ -67,6 +84,7 @@ export function LessonOverlay({ lessonKey, onClose }: LessonOverlayProps) {
         stepIndex={stepIndex}
         totalSteps={steps.length}
         onClose={onClose}
+        onPrev={goPrev}
         onNext={goNext}
         nextDisabled={nextDisabled}
       >
@@ -79,9 +97,28 @@ export function LessonOverlay({ lessonKey, onClose }: LessonOverlayProps) {
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
             {step.type === "learn" && <LearnScreen char={step.char} />}
-
             {step.type === "trace" && <TraceScreen char={step.char} />}
-
+            {step.type === "idiom-explain" && <IdiomExplainScreen char={step.char} />}
+            {step.type === "idiom-trace" && (
+              <IdiomTraceScreen
+                traceChar={step.traceChar}
+                traceHuneum={step.traceHuneum}
+                traceReading={step.traceReading}
+                traceMeaning={step.traceMeaning}
+                traceIndex={step.traceIndex}
+                traceTotal={step.traceTotal}
+              />
+            )}
+            {step.type === "vocab-explain" && <VocabExplainScreen char={step.char} />}
+            {step.type === "vocab-dialogue-quiz" && (
+              <VocabDialogueQuizScreen
+                dialogue={step.dialogue}
+                highlighted={step.highlighted}
+                choices={step.choices}
+                answer={step.answer}
+                onAnswered={() => setQuizAnswered(true)}
+              />
+            )}
             {step.type === "quiz" && (
               <QuizScreen
                 char={step.char}

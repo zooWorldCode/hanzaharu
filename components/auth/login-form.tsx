@@ -26,7 +26,7 @@ export function LoginForm({
   };
 
   const cardContent = (
-    <Card className="w-full max-w-lg rounded-3xl border-2 border-gray-200 bg-white shadow-md">
+    <Card className="mx-auto w-full max-w-lg rounded-3xl border-2 border-gray-200 bg-white shadow-md">
       <CardContent className="flex flex-col gap-5 px-6 py-8 sm:px-8">
         <motion.div
           className="flex justify-center pt-2"
@@ -124,14 +124,14 @@ export function LoginForm({
 
   return (
     <motion.div
-      className="flex min-h-dvh w-full flex-col bg-gradient-to-b from-gray-50 via-white to-gray-100"
+      className="relative flex min-h-dvh w-full items-center justify-center overflow-hidden bg-gradient-to-b from-[#F0F9E8] via-white to-[#EDF7E6]"
       initial={animateEntrance ? { opacity: 0 } : false}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
     >
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-8 md:px-6">
+      <div className="mx-auto flex w-full max-w-2xl items-center justify-center px-4 py-8 md:px-6">
         <motion.div
-          className="flex flex-1 flex-col justify-center"
+          className="flex w-full flex-col justify-center"
           initial={animateEntrance ? { y: -48, opacity: 0 } : false}
           animate={{ y: 0, opacity: 1 }}
           transition={{
@@ -145,7 +145,7 @@ export function LoginForm({
         </motion.div>
 
         <motion.div
-          className="flex justify-center pb-4 pt-6"
+          className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4"
           initial={animateEntrance ? { opacity: 0 } : false}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.35 }}

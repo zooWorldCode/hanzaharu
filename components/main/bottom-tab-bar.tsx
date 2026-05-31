@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   MAIN_TABS,
-  MAIN_TAB_LABELS,
   MAIN_TAB_PATHS,
   type MainTabId,
 } from "@/lib/main-tabs";
@@ -15,7 +14,7 @@ export function BottomTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 z-40 w-full max-w-[1280px] -translate-x-1/2 border-t-2 border-gray-200 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur"
+      className="fixed bottom-0 left-1/2 z-40 w-full max-w-[1280px] -translate-x-1/2 border-t-2 border-[#D4EBC5] bg-white/97 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur"
       aria-label="메인 메뉴"
     >
       <div className="mx-auto flex items-stretch justify-around gap-1">
@@ -37,7 +36,6 @@ export function BottomTabBar() {
               aria-current={isActive ? "page" : undefined}
             >
               <TabIcon tab={tab} active={isActive} />
-              <span className="mt-0.5">{MAIN_TAB_LABELS[tab]}</span>
             </Link>
           );
         })}
@@ -45,6 +43,13 @@ export function BottomTabBar() {
     </nav>
   );
 }
+
+const TAB_LABELS: Record<MainTabId, string> = {
+  learning: "학습",
+  test: "시험",
+  game: "게임",
+  mypage: "마이",
+};
 
 function TabIcon({ tab, active }: { tab: MainTabId; active: boolean }) {
   const icons: Record<MainTabId, string> = {
@@ -55,8 +60,13 @@ function TabIcon({ tab, active }: { tab: MainTabId; active: boolean }) {
   };
 
   return (
-    <span className={cn("text-xl", active && "scale-110")} aria-hidden>
-      {icons[tab]}
-    </span>
+    <>
+      <span className={cn("text-xl transition-transform", active && "scale-110")} aria-hidden>
+        {icons[tab]}
+      </span>
+      <span className={cn("mt-0.5 text-[10px] font-bold", active ? "text-[#4A9B2F]" : "text-gray-400")}>
+        {TAB_LABELS[tab]}
+      </span>
+    </>
   );
 }
