@@ -506,6 +506,7 @@ function RoadMap({
   onSelect,
   onStartStage,
   useStageNumber,
+  compact = false,
 }: {
   stages: FlatStage[];
   currentIndex: number;
@@ -513,9 +514,10 @@ function RoadMap({
   onSelect: (idx: number) => void;
   onStartStage: (stage: FlatStage) => void;
   useStageNumber: boolean;
+  compact?: boolean;
 }) {
   return (
-    <div className="relative flex flex-col items-center gap-10 px-8 py-10">
+    <div className={cn("relative flex flex-col items-center", compact ? "gap-8 px-4 py-6" : "gap-10 px-8 py-10")}>
       <div
         className="pointer-events-none absolute left-1/2 top-0 w-0 -translate-x-1/2 border-l-2 border-dashed border-[#D4EBC5]"
         style={{ height: "100%" }}
@@ -739,7 +741,7 @@ export function LearningContent() {
   return (
     <>
       <div className="md:hidden">
-        <div className="pb-28 pt-2">
+        <div className="pb-8 pt-2">
           <div className="mx-4 mt-2 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
             <div className="flex h-20 items-end justify-between overflow-hidden bg-[#F0F9E8] px-6 pb-4">
               <div>
@@ -818,54 +820,28 @@ export function LearningContent() {
           })()}
 
           <h3 className="mx-4 mt-6 text-base font-extrabold text-gray-900">학습 경로</h3>
-          <div className="relative mx-4 mt-3">
-            <div
-              className="pointer-events-none absolute bottom-0 top-0 w-0 border-l-2 border-dashed border-[#D4EBC5]"
-              style={{ left: 52 }}
-            />
+          <div className="relative mx-2 mt-2 min-h-[980px] overflow-hidden rounded-[28px] bg-[#EDF7E6]">
+            <div className="pb-[220px]">
+              <RoadMap
+                stages={flatStages}
+                currentIndex={currentFlatIndex}
+                selectedIndex={tabletSelectedIndex}
+                onSelect={setTabletSelectedIndex}
+                onStartStage={(stage) => startLesson(buildLessonKey(stage))}
+                useStageNumber={useStageNumber}
+                compact
+              />
+            </div>
 
-            <div className="flex flex-col gap-6 pb-4">
-              {[...flatStages].reverse().map((stage, reverseIndex) => {
-                const realIndex = flatStages.length - 1 - reverseIndex;
-                const status = getStatus(realIndex, currentFlatIndex);
-                const isLocked = status === "locked";
-                const isCompleted = status === "completed";
-                const isNextAfterCurrent = realIndex === currentFlatIndex + 1;
-
-                return (
-                  <div key={`mobile-${stage.chapterNumber}-${stage.id}`} className="relative flex items-center gap-4">
-                    <div className="ml-6 flex flex-col items-center">
-                      {isNextAfterCurrent && (
-                        <div className="mb-1 rounded-full bg-[#C9A227] px-2.5 py-0.5 text-[10px] font-bold text-white shadow">
-                          다음
-                        </div>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={isLocked ? undefined : () => startLesson(buildLessonKey(stage))}
-                        className={cn(
-                          "flex size-14 items-center justify-center rounded-full text-xl font-extrabold shadow transition-transform",
-                          isLocked ? "cursor-default bg-gray-200 text-gray-400" : "cursor-pointer text-white active:scale-95",
-                        )}
-                        style={{
-                          backgroundColor: isLocked
-                            ? undefined
-                            : isCompleted
-                              ? COMPLETED_NODE_COLOR
-                              : stage.headerHex,
-                        }}
-                      >
-                        {useStageNumber ? realIndex + 1 : isLocked ? "잠금" : isCompleted ? "완료" : stage.nodeChar}
-                      </button>
-                    </div>
-
-                    <p className={cn("text-sm font-bold", isLocked ? "text-gray-400" : "text-gray-700")}>
-                      {useStageNumber ? stage.label : `${stage.globalIndex + 1}. ${stage.label}`}
-                    </p>
-                  </div>
-                );
-              })}
+            <div className="absolute bottom-4 left-4 flex w-[132px] flex-col gap-2.5">
+              <div className="rounded-2xl bg-[#F3F0FF] px-4 py-3 text-left shadow-sm">
+                <p className="text-xs font-bold text-gray-500">보유 티켓</p>
+                <p className="mt-1.5 text-[2rem] leading-none font-extrabold text-[#7C3AED]">{tickets}</p>
+              </div>
+              <div className="rounded-2xl bg-[#FFFBE6] px-4 py-3 text-left shadow-sm">
+                <p className="text-xs font-bold text-gray-500">보유 코인</p>
+                <p className="mt-1.5 text-[2rem] leading-none font-extrabold text-[#C9A227]">{coins}</p>
+              </div>
             </div>
           </div>
         </div>

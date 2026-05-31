@@ -151,6 +151,7 @@ function LearningMenu() {
 export function TopActionBar({ config, onAction, className }: TopActionBarProps) {
   const useGreen = config.showStatus || config.showGreenStyle;
   const hasLearningMenu = config.showStatus && config.right.some((button) => button.id === "menu");
+  const showStatusPills = config.showStatus && config.showStatusPills !== false;
   const { tickets, coins } = useUserState();
 
   return (
@@ -178,7 +179,7 @@ export function TopActionBar({ config, onAction, className }: TopActionBarProps)
           )}
         </div>
 
-        {config.showStatus ? (
+        {showStatusPills ? (
           <div className="pointer-events-auto absolute left-1/2 top-0 flex -translate-x-1/2 gap-2">
             <StatusPill label="티켓" value={tickets} tone="text-[#7C3AED]" />
             <StatusPill label="코인" value={coins} tone="text-[#C9A227]" />

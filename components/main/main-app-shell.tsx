@@ -66,7 +66,7 @@ export function MainAppShell({ children }: MainAppShellProps) {
         >
           {topConfig && <TopActionBar config={topConfig} onAction={handleTopAction} />}
 
-          <div className="min-h-dvh pb-24 pt-20">{children}</div>
+          <div className="min-h-dvh pb-8 pt-20">{children}</div>
 
           <BottomTabBar />
 

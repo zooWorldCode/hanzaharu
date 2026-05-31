@@ -142,8 +142,8 @@ function StepTrack({
   return (
     <div className="relative w-full" style={{ width: totalWidth }}>
       <div
-        className={fluid ? "flex w-full items-end justify-between" : "flex items-end"}
-        style={fluid ? { columnGap: DESKTOP_NODE_GAP } : { gap: MOBILE_NODE_GAP }}
+        className={fluid ? "grid w-full grid-cols-7 items-end" : "flex items-end"}
+        style={fluid ? undefined : { gap: MOBILE_NODE_GAP }}
       >
         {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((step) => (
           <div
@@ -288,7 +288,7 @@ export function TestContent() {
           exit={{ opacity: 0, x: 40 }}
           transition={{ duration: 0.22 }}
         >
-          <div className="min-h-screen px-4 py-3 md:py-6">
+          <div className="min-h-screen px-4 pt-3 pb-5 md:pt-6 md:pb-5">
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}

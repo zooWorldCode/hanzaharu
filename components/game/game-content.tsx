@@ -361,7 +361,7 @@ export function GameContent() {
   }
 
   return (
-    <div className="px-4 pb-28 pt-2">
+    <div className="px-4 pb-5 pt-2">
       {/* 헤더 */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}

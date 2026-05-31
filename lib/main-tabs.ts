@@ -30,6 +30,7 @@ export type TopActionButton = {
 export type TopActionConfig = {
   left: TopActionButton;
   showStatus?: boolean;      // 상태 필(🔥💰) + 초록 버튼
+  showStatusPills?: boolean; // 티켓/코인 상태 필 표시 여부
   showGreenStyle?: boolean;  // 상태 필 없이 초록 버튼만
   centerTitle?: string;      // 중앙 타이틀 텍스트
   right: TopActionButton[];
@@ -45,6 +46,7 @@ export const TOP_ACTIONS: Record<MainTabId, TopActionConfig> = {
   learning: {
     left: { id: "settings", label: "⚙", ariaLabel: "설정" },
     showStatus: true,
+    showStatusPills: false,
     right: [{ id: "menu", label: "☰", ariaLabel: "메뉴" }],
   },
   test: {
