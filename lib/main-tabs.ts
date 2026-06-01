@@ -29,10 +29,12 @@ export type TopActionButton = {
 
 export type TopActionConfig = {
   left: TopActionButton;
-  showStatus?: boolean;      // 상태 필(🔥💰) + 초록 버튼
+  showStatus?: boolean;      // 상태 필(티켓+코인) + 초록 버튼
   showStatusPills?: boolean; // 티켓/코인 상태 필 표시 여부
   showGreenStyle?: boolean;  // 상태 필 없이 초록 버튼만
+  showCoinsOnly?: boolean;   // 코인 필만 중앙에 표시 (버튼 색상은 기본 유지)
   centerTitle?: string;      // 중앙 타이틀 텍스트
+  rightCoinWidget?: boolean; // 우측에 코인잔액 + [+] 위젯 표시
   right: TopActionButton[];
 };
 
@@ -40,6 +42,19 @@ export const RANKING_ROUTE_ACTION: TopActionConfig = {
   left: { id: "back", label: "‹", ariaLabel: "뒤로가기" },
   centerTitle: "순위",
   right: [{ id: "help", label: "?", ariaLabel: "도움말" }],
+};
+
+export const CUSTOMIZE_ROUTE_ACTION: TopActionConfig = {
+  left: { id: "back", label: "‹", ariaLabel: "뒤로가기" },
+  centerTitle: "꾸미기",
+  right: [{ id: "shop", label: "🏪", ariaLabel: "상점" }],
+};
+
+export const SHOP_ROUTE_ACTION: TopActionConfig = {
+  left: { id: "back", label: "‹", ariaLabel: "뒤로가기" },
+  centerTitle: "상점",
+  rightCoinWidget: true,
+  right: [],
 };
 
 export const TOP_ACTIONS: Record<MainTabId, TopActionConfig> = {
@@ -52,6 +67,7 @@ export const TOP_ACTIONS: Record<MainTabId, TopActionConfig> = {
   test: {
     left: { id: "settings", label: "⚙", ariaLabel: "설정" },
     showStatus: true,
+    showStatusPills: false,
     right: [{ id: "menu", label: "☰", ariaLabel: "메뉴" }],
   },
   game: {
@@ -60,11 +76,9 @@ export const TOP_ACTIONS: Record<MainTabId, TopActionConfig> = {
     right: [{ id: "ranking", label: "🏆", ariaLabel: "등수" }],
   },
   mypage: {
-    left: { id: "home", label: "🏠", ariaLabel: "홈" },
-    right: [
-      { id: "edit", label: "✏", ariaLabel: "편집" },
-      { id: "settings", label: "⚙", ariaLabel: "설정" },
-    ],
+    left: { id: "settings", label: "⚙", ariaLabel: "설정" },
+    showCoinsOnly: true,
+    right: [{ id: "photo", label: "📷", ariaLabel: "사진 저장" }],
   },
 };
 

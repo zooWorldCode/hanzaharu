@@ -257,7 +257,7 @@ export function TestContent() {
   const [examStarted, setExamStarted] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const { level, xpInLevel, title } = useUserState();
+  const { level, xpInLevel, title, tickets, coins } = useUserState();
 
   const xpPct = Math.round((xpInLevel / XP_PER_LEVEL) * 100);
   const isExamLocked = level < requiredLevel(currentStep);
@@ -288,7 +288,7 @@ export function TestContent() {
           exit={{ opacity: 0, x: 40 }}
           transition={{ duration: 0.22 }}
         >
-          <div className="min-h-screen px-4 pt-3 pb-5 md:pt-6 md:pb-5">
+          <div className="min-h-screen px-4 pt-3 pb-16 md:pt-6 md:pb-16">
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -424,6 +424,7 @@ export function TestContent() {
                 </motion.button>
               )}
             </motion.div>
+
           </div>
         </motion.div>
       )}

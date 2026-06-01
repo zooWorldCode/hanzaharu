@@ -1,11 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
-import { Minus, Plus, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
-const MIN_SCALE = 0.6;
-const MAX_SCALE = 2.2;
+/* ══════════════════════════════════════════════════
+   상수
+══════════════════════════════════════════════════ */
+
+const CONTENT_W = 1280;
+const CONTENT_H = 720;
+
+/* ══════════════════════════════════════════════════
+   타입
+══════════════════════════════════════════════════ */
 
 type MypageRoomCanvasProps = {
   userName?: string;
@@ -13,171 +21,248 @@ type MypageRoomCanvasProps = {
   coins?: number;
 };
 
+/* ══════════════════════════════════════════════════
+   아이소메트릭 큐브 SVG 플레이스홀더
+══════════════════════════════════════════════════ */
+
+function IsoCubePlaceholder() {
+  return (
+    <svg
+      viewBox="0 0 120 100"
+      className="h-28 w-36 text-[#B5CFA8]"
+      fill="none"
+      aria-hidden
+    >
+      {/* 윗면 */}
+      <polygon
+        points="60,6 108,31 60,56 12,31"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray="5,3"
+      />
+      {/* 오른쪽 면 */}
+      <polygon
+        points="108,31 108,74 60,99 60,56"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray="5,3"
+      />
+      {/* 왼쪽 면 */}
+      <polygon
+        points="12,31 12,74 60,99 60,56"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray="5,3"
+      />
+    </svg>
+  );
+}
+
+/* ══════════════════════════════════════════════════
+   캔버스 코너 장식
+══════════════════════════════════════════════════ */
+
+function CornerBrackets() {
+  const base = "absolute h-5 w-5 border-[#A8C99A]";
+  return (
+    <>
+      <div className={`${base} left-4 top-4 border-l-2 border-t-2`} />
+      <div className={`${base} right-4 top-4 border-r-2 border-t-2`} />
+      <div className={`${base} bottom-4 left-4 border-b-2 border-l-2`} />
+      <div className={`${base} bottom-4 right-4 border-b-2 border-r-2`} />
+    </>
+  );
+}
+
+/* ══════════════════════════════════════════════════
+   메인 컴포넌트
+══════════════════════════════════════════════════ */
+
 export function MypageRoomCanvas({
   userName = "한자 친구",
   level = 1,
-  coins = 100,
 }: MypageRoomCanvasProps) {
-  const [scale, setScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef({
+    active: false,
+    startX: 0,
+    startY: 0,
+    ox: 0,
+    oy: 0,
+  });
+  const router = useRouter();
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const dragState = useRef<{
-    active: boolean;
-    startX: number;
-    startY: number;
-    originX: number;
-    originY: number;
-  }>({ active: false, startX: 0, startY: 0, originX: 0, originY: 0 });
+  const [toast, setToast] = useState(false);
 
-  const clampScale = (value: number) =>
-    Math.min(MAX_SCALE, Math.max(MIN_SCALE, value));
-
-  const handleWheel = useCallback((event: React.WheelEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const delta = event.deltaY > 0 ? -0.08 : 0.08;
-    setScale((prev) => clampScale(prev + delta));
+  /* 마운트 시 1280px 콘텐츠를 뷰포트 중앙에 정렬 */
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const cw = el.clientWidth;
+    const ch = el.clientHeight;
+    const clamp = (v: number, lo: number, hi: number) =>
+      Math.min(hi, Math.max(lo, v));
+    setOffset({
+      x: clamp((cw - CONTENT_W) / 2, cw - CONTENT_W, 0),
+      y: clamp((ch - CONTENT_H) / 2, ch - CONTENT_H, 0),
+    });
   }, []);
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0) return;
-    dragState.current = {
-      active: true,
-      startX: event.clientX,
-      startY: event.clientY,
-      originX: offset.x,
-      originY: offset.y,
+  /* 오프셋 클램프 — 콘텐츠가 뷰포트 밖으로 완전히 벗어나지 않도록 */
+  const clampOffset = useCallback((x: number, y: number) => {
+    const el = containerRef.current;
+    if (!el) return { x, y };
+    const cw = el.clientWidth;
+    const ch = el.clientHeight;
+    return {
+      x: Math.min(0, Math.max(cw - CONTENT_W, x)),
+      y: Math.min(0, Math.max(ch - CONTENT_H, y)),
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
+  }, []);
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragState.current.active) return;
-    const dx = event.clientX - dragState.current.startX;
-    const dy = event.clientY - dragState.current.startY;
-    setOffset({
-      x: dragState.current.originX + dx,
-      y: dragState.current.originY + dy,
-    });
-  };
+  /* ── 드래그 핸들러 ── */
+  function handlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.button !== 0) return;
+    dragRef.current = {
+      active: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      ox: offset.x,
+      oy: offset.y,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
 
-  const endDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    dragState.current.active = false;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+  function handlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!dragRef.current.active) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    setOffset(clampOffset(dragRef.current.ox + dx, dragRef.current.oy + dy));
+  }
+
+  function endDrag(e: React.PointerEvent<HTMLDivElement>) {
+    dragRef.current.active = false;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
     }
-  };
+  }
 
-  const resetView = () => {
-    setScale(1);
-    setOffset({ x: 0, y: 0 });
-  };
+  /* ── 토스트 ── */
+  function showToast() {
+    setToast(true);
+    setTimeout(() => setToast(false), 2000);
+  }
 
   return (
-    <div className="flex h-[calc(100dvh-7rem)] flex-col px-4">
-      <div className="mb-3 flex items-end justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">내 공간</h1>
-          <p className="text-sm text-gray-500">
-            {userName} · Lv.{level} · 🪙 {coins}
-          </p>
-        </div>
-        <p className="text-xs text-gray-400">확대·드래그로 꾸며요</p>
-      </div>
+    /* 바깥 래퍼 — 버튼 absolute 기준점 */
+    <div className="relative flex h-[calc(100dvh-10.5rem)] flex-col px-4 pb-3">
 
-      <div className="mb-3 flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="size-11 rounded-full border-2"
-          onClick={() => setScale((s) => clampScale(s - 0.15))}
-          aria-label="축소"
-        >
-          <Minus className="size-5" />
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="size-11 rounded-full border-2"
-          onClick={() => setScale((s) => clampScale(s + 0.15))}
-          aria-label="확대"
-        >
-          <Plus className="size-5" />
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          className="size-11 rounded-full border-2"
-          onClick={resetView}
-          aria-label="화면 초기화"
-        >
-          <RotateCcw className="size-5" />
-        </Button>
-        <span className="ml-auto flex items-center text-sm font-medium text-gray-500">
-          {Math.round(scale * 100)}%
-        </span>
-      </div>
-
+      {/* ── 드래그 가능한 캔버스 뷰포트 ── */}
       <div
-        className="relative flex-1 touch-none overflow-hidden rounded-3xl border-2 border-gray-200 bg-[#e8f4e1]"
-        onWheel={handleWheel}
+        ref={containerRef}
+        className="relative flex-1 cursor-grab touch-none select-none overflow-hidden rounded-3xl border-2 border-dashed border-[#B5CFA8] bg-[#F8F5EE] active:cursor-grabbing"
+        role="application"
+        aria-label="캐릭터 방. 드래그로 이동"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={endDrag}
         onPointerLeave={endDrag}
         onPointerCancel={endDrag}
-        role="application"
-        aria-label="집 꾸미기 공간. 드래그로 이동, 휠로 확대 축소"
       >
+        {/* 대각선 줄무늬 배경 */}
         <div
-          className="absolute left-1/2 top-1/2 origin-center will-change-transform"
+          className="absolute inset-0 rounded-3xl"
           style={{
-            width: 720,
-            height: 520,
-            transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${scale})`,
+            backgroundImage:
+              "repeating-linear-gradient(135deg, transparent, transparent 14px, rgba(0,0,0,0.025) 14px, rgba(0,0,0,0.025) 15px)",
+          }}
+        />
+
+        {/* 코너 브래킷 장식 */}
+        <CornerBrackets />
+
+        {/* 1280 × 720 드래그 콘텐츠 */}
+        <div
+          className="absolute origin-top-left will-change-transform"
+          style={{
+            width: CONTENT_W,
+            height: CONTENT_H,
+            transform: `translate(${offset.x}px, ${offset.y}px)`,
           }}
         >
-          <RoomScene />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="flex h-full flex-col items-center justify-center gap-4"
+          >
+            <IsoCubePlaceholder />
+
+            <div className="text-center">
+              <p className="text-base font-extrabold text-gray-500">
+                캐릭터 방 일러스트 자리
+              </p>
+              <p className="mt-0.5 text-xs font-semibold text-gray-400">
+                {userName} · Lv.{level}
+              </p>
+            </div>
+
+            {/* 태그 필 */}
+            <div className="flex flex-wrap justify-center gap-2">
+              {["한쪽 이소메트릭", "캐릭터 + 가구 이미지 영역"].map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold text-gray-400 shadow-sm ring-1 ring-[#D4EBC5]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
-  );
-}
 
-function RoomScene() {
-  return (
-    <div className="relative size-full rounded-3xl bg-gradient-to-b from-sky-100 to-green-100 shadow-inner">
-      <div className="absolute bottom-8 left-1/2 h-40 w-56 -translate-x-1/2 rounded-t-3xl border-4 border-amber-700 bg-amber-100">
-        <div className="absolute -top-20 left-1/2 h-24 w-40 -translate-x-1/2 rounded-t-full bg-rose-300" />
-        <div className="absolute bottom-0 left-4 size-10 rounded-lg bg-sky-300" />
-        <div className="absolute bottom-0 right-6 size-14 rounded-full bg-yellow-300" />
-      </div>
-
-      <div className="absolute bottom-24 left-16 flex flex-col items-center">
-        <span className="text-5xl" aria-hidden>
-          🧒
-        </span>
-        <span className="mt-1 rounded-full bg-white/80 px-2 py-0.5 text-xs font-bold">
-          아바타
-        </span>
+        {/* 준비중 토스트 */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ opacity: 0, y: 14, scale: 0.92 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ type: "spring", damping: 22, stiffness: 320 }}
+              className="absolute bottom-20 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-2xl bg-gray-900/85 px-5 py-2.5 text-sm font-bold text-white shadow-xl backdrop-blur-sm"
+            >
+              🛠 서비스 준비 중이에요
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <div className="absolute right-12 top-16 rounded-2xl border-2 border-dashed border-gray-400 bg-white/60 px-4 py-3 text-center text-sm font-medium text-gray-600">
-        가구 놓기
-        <br />
-        (터치 홀드 후 이동)
-      </div>
+      {/* ── 플로팅 액션 버튼 — 캔버스 우하단에 오버랩 ── */}
+      <div className="absolute bottom-8 right-6 z-10 flex flex-col gap-3">
+        {/* 꾸미기 — primary */}
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.02 }}
+          onClick={() => router.push("/mypage/customize")}
+          className="flex items-center gap-2 rounded-2xl bg-[#4A9B2F] px-5 py-3 text-sm font-extrabold text-white shadow-lg"
+        >
+          <span>👗</span>
+          <span>꾸미기</span>
+        </motion.button>
 
-      <span className="absolute left-10 top-12 text-4xl" aria-hidden>
-        🌳
-      </span>
-      <span className="absolute right-20 bottom-32 text-3xl" aria-hidden>
-        🪑
-      </span>
-      <span className="absolute left-1/3 top-20 text-2xl" aria-hidden>
-        ☁️
-      </span>
+        {/* 상점 — secondary */}
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.02 }}
+          onClick={() => router.push("/mypage/shop")}
+          className="flex items-center gap-2 rounded-2xl border-2 border-[#4A9B2F] bg-white px-5 py-3 text-sm font-extrabold text-[#4A9B2F] shadow-md"
+        >
+          <span>🏪</span>
+          <span>상점</span>
+        </motion.button>
+      </div>
     </div>
   );
 }

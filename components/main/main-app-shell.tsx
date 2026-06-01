@@ -8,7 +8,7 @@ import { BottomTabBar } from "@/components/main/bottom-tab-bar";
 import { TopActionBar } from "@/components/main/top-action-bar";
 import { SettingsSheet } from "@/components/settings/settings-sheet";
 import { LearningTypeProvider } from "@/lib/learning-type-context";
-import { TOP_ACTIONS, RANKING_ROUTE_ACTION, getTabFromPath } from "@/lib/main-tabs";
+import { TOP_ACTIONS, RANKING_ROUTE_ACTION, CUSTOMIZE_ROUTE_ACTION, SHOP_ROUTE_ACTION, getTabFromPath } from "@/lib/main-tabs";
 import { UserStateProvider } from "@/lib/user-state-context";
 import { cn } from "@/lib/utils";
 
@@ -26,11 +26,17 @@ export function MainAppShell({ children }: MainAppShellProps) {
     return <>{children}</>;
   }
 
-  const isRankingPage = pathname === "/game/ranking";
+  const isRankingPage   = pathname === "/game/ranking";
+  const isCustomizePage = pathname.startsWith("/mypage/customize");
+  const isShopPage      = pathname.startsWith("/mypage/shop");
   const topConfig = currentTab
     ? isRankingPage
       ? RANKING_ROUTE_ACTION
-      : TOP_ACTIONS[currentTab]
+      : isCustomizePage
+        ? CUSTOMIZE_ROUTE_ACTION
+        : isShopPage
+          ? SHOP_ROUTE_ACTION
+          : TOP_ACTIONS[currentTab]
     : null;
 
   const handleTopAction = (buttonId: string) => {
@@ -50,7 +56,11 @@ export function MainAppShell({ children }: MainAppShellProps) {
       router.push("/learning");
       return;
     }
-    if (buttonId === "help") {
+    if (buttonId === "shop") {
+      router.push("/mypage/shop");
+      return;
+    }
+    if (buttonId === "help" || buttonId === "photo") {
       return;
     }
   };

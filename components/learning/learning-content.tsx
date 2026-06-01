@@ -627,13 +627,13 @@ function LeftPanel({
       )}
 
       <div className="shrink-0 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-[#F3F0FF] p-4 text-center">
-          <p className="text-xs font-bold text-gray-500">보유 티켓</p>
-          <p className="mt-2 text-2xl font-extrabold text-[#7C3AED]">티켓 {tickets}</p>
+        <div className="rounded-2xl bg-[#F3F0FF] px-3 py-2.5 text-center">
+          <p className="text-[11px] font-bold text-gray-500">보유 티켓</p>
+          <p className="mt-1 text-lg font-extrabold text-[#7C3AED]">{tickets}</p>
         </div>
-        <div className="rounded-2xl bg-[#FFFBE6] p-4 text-center">
-          <p className="text-xs font-bold text-gray-500">보유 코인</p>
-          <p className="mt-2 text-2xl font-extrabold text-[#C9A227]">코인 {coins}</p>
+        <div className="rounded-2xl bg-[#FFFBE6] px-3 py-2.5 text-center">
+          <p className="text-[11px] font-bold text-gray-500">보유 코인</p>
+          <p className="mt-1 text-lg font-extrabold text-[#C9A227]">{coins}</p>
         </div>
       </div>
 
@@ -741,7 +741,7 @@ export function LearningContent() {
   return (
     <>
       <div className="md:hidden">
-        <div className="pb-8 pt-2">
+        <div className="pb-16 pt-2">
           <div className="mx-4 mt-2 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
             <div className="flex h-20 items-end justify-between overflow-hidden bg-[#F0F9E8] px-6 pb-4">
               <div>
@@ -833,14 +833,14 @@ export function LearningContent() {
               />
             </div>
 
-            <div className="absolute bottom-4 left-4 flex w-[132px] flex-col gap-2.5">
-              <div className="rounded-2xl bg-[#F3F0FF] px-4 py-3 text-left shadow-sm">
-                <p className="text-xs font-bold text-gray-500">보유 티켓</p>
-                <p className="mt-1.5 text-[2rem] leading-none font-extrabold text-[#7C3AED]">{tickets}</p>
+            <div className="absolute bottom-4 left-4 flex w-[120px] flex-col gap-2">
+              <div className="rounded-2xl bg-[#F3F0FF] px-3 py-2.5 text-left shadow-sm">
+                <p className="text-[11px] font-bold text-gray-500">보유 티켓</p>
+                <p className="mt-1 text-xl font-extrabold leading-none text-[#7C3AED]">{tickets}</p>
               </div>
-              <div className="rounded-2xl bg-[#FFFBE6] px-4 py-3 text-left shadow-sm">
-                <p className="text-xs font-bold text-gray-500">보유 코인</p>
-                <p className="mt-1.5 text-[2rem] leading-none font-extrabold text-[#C9A227]">{coins}</p>
+              <div className="rounded-2xl bg-[#FFFBE6] px-3 py-2.5 text-left shadow-sm">
+                <p className="text-[11px] font-bold text-gray-500">보유 코인</p>
+                <p className="mt-1 text-xl font-extrabold leading-none text-[#C9A227]">{coins}</p>
               </div>
             </div>
           </div>

@@ -72,6 +72,20 @@ function StatusPill({ label, value, tone }: { label: string; value: number; tone
   );
 }
 
+function CoinWidget({ coins }: { coins: number }) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 shadow-sm ring-1 ring-[#D4EBC5]">
+      <div className="size-3.5 rounded-full bg-[#C9A227]" />
+      <span className="text-sm font-bold text-gray-800">
+        {coins.toLocaleString("ko-KR")}
+      </span>
+      <div className="ml-0.5 flex size-6 items-center justify-center rounded-full bg-[#4A9B2F] text-xs font-extrabold text-white">
+        +
+      </div>
+    </div>
+  );
+}
+
 function LearningMenu() {
   const [open, setOpen] = useState(false);
   const { learningType, setLearningType } = useLearningType();
@@ -184,6 +198,10 @@ export function TopActionBar({ config, onAction, className }: TopActionBarProps)
             <StatusPill label="티켓" value={tickets} tone="text-[#7C3AED]" />
             <StatusPill label="코인" value={coins} tone="text-[#C9A227]" />
           </div>
+        ) : config.showCoinsOnly ? (
+          <div className="pointer-events-auto absolute left-1/2 top-0 flex -translate-x-1/2">
+            <StatusPill label="🪙" value={coins} tone="text-[#C9A227]" />
+          </div>
         ) : config.centerTitle ? (
           <div className="pointer-events-none absolute left-1/2 top-0 flex h-12 -translate-x-1/2 items-center">
             <h1 className="text-xl font-extrabold text-gray-900">{config.centerTitle}</h1>
@@ -191,7 +209,9 @@ export function TopActionBar({ config, onAction, className }: TopActionBarProps)
         ) : null}
 
         <div className="pointer-events-auto flex shrink-0 items-center gap-3">
-          {hasLearningMenu ? (
+          {config.rightCoinWidget ? (
+            <CoinWidget coins={coins} />
+          ) : hasLearningMenu ? (
             <LearningMenu />
           ) : (
             config.right.map((button) =>
